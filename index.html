@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Poker Chip Counter</title>
+  <style>
+    :root {
+      --bg-1: #0f172a;
+      --bg-2: #111827;
+      --card: rgba(255,255,255,0.08);
+      --card-border: rgba(255,255,255,0.12);
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --accent: #f59e0b;
+      --shadow: 0 20px 50px rgba(0,0,0,0.35);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(245, 158, 11, 0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(59, 130, 246, 0.15), transparent 26%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-2));
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      padding: 24px 16px 40px;
+    }
+
+    .app { width: 100%; max-width: 520px; }
+
+    .hero { padding: 10px 4px 18px; }
+
+    .title {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 2.6rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .chip-list {
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .chip-row {
+      display: grid;
+      grid-template-columns: 64px 1fr 120px;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 12px;
+    }
+
+    .chip {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 0.95rem;
+      border: 4px dashed rgba(255,255,255,0.8);
+      box-shadow: inset 0 0 0 4px rgba(255,255,255,0.2), 0 8px 18px rgba(0,0,0,0.25);
+    }
+
+    .chip.white { background: linear-gradient(145deg, #ffffff, #e5e7eb); color: #0f172a; }
+    .chip.blue { background: linear-gradient(145deg, #60a5fa, #1d4ed8); color: white; }
+    .chip.green { background: linear-gradient(145deg, #4ade80, #15803d); color: white; }
+    .chip.black { background: linear-gradient(145deg, #334155, #020617); color: white; }
+    .chip.red { background: linear-gradient(145deg, #f87171, #991b1b); color: white; }
+
+    .chip-info { min-width: 0; }
+
+    .chip-name { margin: 0; font-size: 1rem; font-weight: 700; }
+
+    .chip-value { margin: 4px 0 0; color: var(--muted); font-size: 0.95rem; }
+
+    .count-input {
+      width: 100%;
+      appearance: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(15,23,42,0.55);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 14px 14px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+    }
+
+    .count-input:focus {
+      border-color: rgba(245, 158, 11, 0.9);
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
+    }
+
+    .footer { padding: 14px; display: grid; gap: 12px; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 18px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(255,255,255,0.06));
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .summary-label { margin: 0; color: var(--muted); font-size: 0.95rem; }
+
+    .summary-total {
+      margin: 6px 0 0;
+      font-size: clamp(2rem, 7vw, 2.8rem);
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .summary-chips { font-size: 0.95rem; color: var(--muted); text-align: right; font-weight: 600; }
+
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 18px;
+      padding: 15px 16px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    .primary { background: linear-gradient(135deg, #f59e0b, #f97316); color: white; }
+
+    .secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .breakdown {
+      margin-top: 14px;
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .breakdown h2 { margin: 0 0 12px; font-size: 1rem; }
+
+    .line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .line strong { color: var(--text); }
+
+    .hint { text-align: center; color: var(--muted); margin-top: 14px; font-size: 0.9rem; }
+
+    @media (max-width: 430px) {
+      .chip-row { grid-template-columns: 56px 1fr 92px; gap: 10px; padding: 10px; }
+      .count-input { padding: 13px 10px; }
+      .actions { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+
+    <section class="hero">
+      <h1 class="title">Poker Chip Counter</h1>
+      <p class="subtitle">Enter how many chips you have at the end of the night.</p>
+    </section>
+
+    <section class="panel">
+
+      <div class="chip-list">
+
+        <div class="chip-row">
+          <div class="chip white">50¢</div>
+          <div class="chip-info">
+            <p class="chip-name">White chip</p>
+            <p class="chip-value">$0.50 each</p>
+          </div>
+          <input id="white" class="count-input" type="number" min="0"  />
+        </div>
+
+        <div class="chip-row">
+          <div class="chip blue">$1</div>
+          <div class="chip-info">
+            <p class="chip-name">Blue chip</p>
+            <p class="chip-value">$1 each</p>
+          </div>
+          <input id="blue" class="count-input" type="number" min="0"  />
+        </div>
+
+        <div class="chip-row">
+          <div class="chip green">$2</div>
+          <div class="chip-info">
+            <p class="chip-name">Green chip</p>
+            <p class="chip-value">$2 each</p>
+          </div>
+          <input id="green" class="count-input" type="number" min="0"  />
+        </div>
+
+        <div class="chip-row">
+          <div class="chip black">$5</div>
+          <div class="chip-info">
+            <p class="chip-name">Black chip</p>
+            <p class="chip-value">$5 each</p>
+          </div>
+          <input id="black" class="count-input" type="number" min="0"  />
+        </div>
+
+        <div class="chip-row">
+          <div class="chip red">$25</div>
+          <div class="chip-info">
+            <p class="chip-name">Red chip</p>
+            <p class="chip-value">$25 each</p>
+          </div>
+          <input id="red" class="count-input" type="number" min="0"  />
+        </div>
+
+      </div>
+
+      <div class="footer">
+
+        <div class="summary">
+          <div>
+            <p class="summary-label">Total cash value</p>
+            <p id="total" class="summary-total">$0.00</p>
+          </div>
+          <div id="chipCount" class="summary-chips">0 chips</div>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="shareBtn">Copy result</button>
+          <button class="secondary" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="breakdown">
+          <h2>Breakdown</h2>
+          <div class="line"><span>White</span><strong id="whiteTotal">$0.00</strong></div>
+          <div class="line"><span>Blue</span><strong id="blueTotal">$0.00</strong></div>
+          <div class="line"><span>Green</span><strong id="greenTotal">$0.00</strong></div>
+          <div class="line"><span>Black</span><strong id="blackTotal">$0.00</strong></div>
+          <div class="line"><span>Red</span><strong id="redTotal">$0.00</strong></div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <p class="hint">Tip: add to Home Screen on iPhone for an app icon.</p>
+
+  </main>
+
+  <script>
+
+    const values = {
+      white: 0.5,
+      blue: 1,
+      green: 2,
+      black: 5,
+      red: 25
+    };
+
+    const fields = {
+      white: document.getElementById('white'),
+      blue: document.getElementById('blue'),
+      green: document.getElementById('green'),
+      black: document.getElementById('black'),
+      red: document.getElementById('red')
+    };
+
+    const totals = {
+      white: document.getElementById('whiteTotal'),
+      blue: document.getElementById('blueTotal'),
+      green: document.getElementById('greenTotal'),
+      black: document.getElementById('blackTotal'),
+      red: document.getElementById('redTotal')
+    };
+
+    const totalEl = document.getElementById('total');
+    const chipCountEl = document.getElementById('chipCount');
+    const resetBtn = document.getElementById('resetBtn');
+    const shareBtn = document.getElementById('shareBtn');
+
+    function getCount(input) {
+      const n = parseInt(input.value, 10);
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    }
+
+    function formatMoney(amount) {
+      return amount.toLocaleString(undefined, {
+        style: 'currency',
+        currency: 'USD'
+      });
+    }
+
+    function updateTotals() {
+
+      let grandTotal = 0;
+      let chipCount = 0;
+
+      for (const color of Object.keys(values)) {
+
+        const count = getCount(fields[color]);
+        const subtotal = count * values[color];
+
+        grandTotal += subtotal;
+        chipCount += count;
+
+        totals[color].textContent = formatMoney(subtotal);
+      }
+
+      totalEl.textContent = formatMoney(grandTotal);
+      chipCountEl.textContent = `${chipCount} chip${chipCount === 1 ? '' : 's'}`;
+    }
+
+    function resetAll() {
+
+      for (const color of Object.keys(fields)) {
+        fields[color].value = '';
+      }
+
+      updateTotals();
+
+    }
+
+    async function copyResult() {
+
+      const white = getCount(fields.white);
+      const blue = getCount(fields.blue);
+      const green = getCount(fields.green);
+      const black = getCount(fields.black);
+      const red = getCount(fields.red);
+
+      const total =
+        white * values.white +
+        blue * values.blue +
+        green * values.green +
+        black * values.black +
+        red * values.red;
+
+      const text = `Poker chips\nWhite (50¢): ${white}\nBlue ($1): ${blue}\nGreen ($2): ${green}\nBlack ($5): ${black}\nRed ($25): ${red}\nTotal: ${formatMoney(total)}`;
+
+      try {
+        await navigator.clipboard.writeText(text);
+        shareBtn.textContent = 'Copied';
+        setTimeout(() => shareBtn.textContent = 'Copy result', 1200);
+      } catch {
+        shareBtn.textContent = 'Copy failed';
+        setTimeout(() => shareBtn.textContent = 'Copy result', 1200);
+      }
+
+    }
+
+    Object.values(fields).forEach((input) => {
+      input.addEventListener('input', updateTotals);
+    });
+
+    resetBtn.addEventListener('click', resetAll);
+    shareBtn.addEventListener('click', copyResult);
+
+    updateTotals();
+
+  </script>
+
+</body>
+</html>
