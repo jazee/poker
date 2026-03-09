@@ -35,12 +35,12 @@
     body {
       display: flex;
       justify-content: center;
-      padding: 24px 16px 40px;
+      padding: 12px 12px 16px;
     }
 
     .app { width: 100%; max-width: 520px; }
 
-    .hero { padding: 10px 4px 18px; }
+    .hero { padding: 6px 4px 10px; }
 
     .title {
       margin: 0;
@@ -70,23 +70,23 @@
     .chip-list {
       padding: 14px;
       display: grid;
-      gap: 12px;
+      gap: 8px;
     }
 
     .chip-row {
       display: grid;
       grid-template-columns: 64px 1fr 120px;
-      gap: 12px;
+      gap: 8px;
       align-items: center;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
-      padding: 12px;
+      padding: 8px;
     }
 
     .chip {
-      width: 52px;
-      height: 52px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: grid;
       place-items: center;
@@ -115,7 +115,7 @@
       background: rgba(15,23,42,0.55);
       color: var(--text);
       border-radius: 16px;
-      padding: 14px 14px;
+      padding: 10px 10px;
       font-size: 1.1rem;
       font-weight: 700;
       text-align: center;
@@ -127,14 +127,14 @@
       box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
     }
 
-    .footer { padding: 14px; display: grid; gap: 12px; }
+    .footer { padding: 14px; display: grid; gap: 8px; }
 
     .summary {
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 12px;
+      gap: 8px;
       align-items: center;
-      padding: 18px;
+      padding: 12px;
       border-radius: 20px;
       background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(255,255,255,0.06));
       border: 1px solid rgba(245, 158, 11, 0.25);
@@ -152,7 +152,7 @@
 
     .summary-chips { font-size: 0.95rem; color: var(--muted); text-align: right; font-weight: 600; }
 
-    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
     button {
       appearance: none;
@@ -176,8 +176,8 @@
     }
 
     .breakdown {
-      margin-top: 14px;
-      padding: 18px;
+      margin-top: 8px;
+      padding: 12px;
       border-radius: 20px;
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
@@ -188,7 +188,7 @@
     .line {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
+      gap: 8px;
       padding: 8px 0;
       color: var(--muted);
       font-size: 0.96rem;
@@ -196,7 +196,7 @@
 
     .line strong { color: var(--text); }
 
-    .hint { text-align: center; color: var(--muted); margin-top: 14px; font-size: 0.9rem; }
+    .hint { text-align: center; color: var(--muted); margin-top: 8px; font-size: 0.9rem; }
 
     @media (max-width: 430px) {
       .chip-row { grid-template-columns: 56px 1fr 92px; gap: 10px; padding: 10px; }
