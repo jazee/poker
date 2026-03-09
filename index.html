@@ -406,7 +406,7 @@
 
     function updateVenmoLinks(amount) {
       const cents = Math.round(amount * 100);
-      const note = encodeURIComponent('Poker settlement');
+      const note = encodeURIComponent('Pizza with the gang');
       venmoPayLink.href = `venmo://paycharge?txn=pay&recipients=Jayant-Kulkarni&amount=${amount.toFixed(2)}&note=${note}`;
       venmoRequestLink.href = `venmo://paycharge?txn=charge&recipients=Jayant-Kulkarni&amount=${amount.toFixed(2)}&note=${note}`;
     }
