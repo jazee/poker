@@ -175,6 +175,47 @@
       border: 1px solid rgba(255,255,255,0.1);
     }
 
+    .action-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border-radius: 18px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      font-weight: 800;
+      min-height: 48px;
+    }
+
+    .action-hidden {
+      display: none;
+    }
+
+    .settlement-card {
+      margin-top: 8px;
+    }
+
+    .settlement-input-row {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .settlement-label {
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .money-input {
+      text-align: left;
+    }
+
+    .settlement-result {
+      align-items: center;
+      font-size: 1rem;
+    }
+
     .breakdown {
       margin-top: 8px;
       padding: 12px;
@@ -288,6 +329,19 @@
           <div class="line"><span>Red</span><strong id="redTotal">$0.00</strong></div>
         </div>
 
+        <div class="breakdown settlement-card">
+          <h2>Settlement</h2>
+          <div class="settlement-input-row">
+            <label for="buyIn" class="settlement-label">Total buy-in</label>
+            <input id="buyIn" class="count-input money-input" type="text" inputmode="decimal" pattern="[0-9]*[.]?[0-9]*" enterkeyhint="done" autocomplete="off" placeholder="$0.00" />
+          </div>
+          <div class="line settlement-result"><span id="settlementText">Enter your buy-in</span><strong id="settlementAmount">$0.00</strong></div>
+          <div class="actions settlement-actions">
+            <a id="venmoPayLink" class="action-link primary action-hidden" href="#">Pay with Venmo</a>
+            <a id="venmoRequestLink" class="action-link secondary action-hidden" href="#">Request with Venmo</a>
+          </div>
+        </div>
+
       </div>
 
     </section>
@@ -326,6 +380,11 @@
     const chipCountEl = document.getElementById('chipCount');
     const resetBtn = document.getElementById('resetBtn');
     const shareBtn = document.getElementById('shareBtn');
+    const buyInField = document.getElementById('buyIn');
+    const settlementTextEl = document.getElementById('settlementText');
+    const settlementAmountEl = document.getElementById('settlementAmount');
+    const venmoPayLink = document.getElementById('venmoPayLink');
+    const venmoRequestLink = document.getElementById('venmoRequestLink');
 
     function getCount(input) {
       const n = parseInt(input.value, 10);
@@ -337,6 +396,47 @@
         style: 'currency',
         currency: 'USD'
       });
+    }
+
+    function getMoneyValue(input) {
+      const cleaned = String(input.value || '').replace(/[^0-9.]/g, '');
+      const n = parseFloat(cleaned);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    }
+
+    function updateVenmoLinks(amount) {
+      const cents = Math.round(amount * 100);
+      const note = encodeURIComponent('Poker settlement');
+      venmoPayLink.href = `venmo://paycharge?txn=pay&recipients=Jayant-Kulkarni&amount=${amount.toFixed(2)}&note=${note}`;
+      venmoRequestLink.href = `venmo://paycharge?txn=charge&recipients=Jayant-Kulkarni&amount=${amount.toFixed(2)}&note=${note}`;
+    }
+
+    function updateSettlement(totalAmount) {
+      const buyIn = getMoneyValue(buyInField);
+      const diff = +(totalAmount - buyIn).toFixed(2);
+      const absDiff = Math.abs(diff);
+
+      venmoPayLink.classList.add('action-hidden');
+      venmoRequestLink.classList.add('action-hidden');
+
+      if (!buyInField.value.trim()) {
+        settlementTextEl.textContent = 'Enter your buy-in';
+        settlementAmountEl.textContent = '$0.00';
+        return;
+      }
+
+      settlementAmountEl.textContent = formatMoney(absDiff);
+      updateVenmoLinks(absDiff);
+
+      if (diff > 0) {
+        settlementTextEl.textContent = 'You are owed';
+        venmoRequestLink.classList.remove('action-hidden');
+      } else if (diff < 0) {
+        settlementTextEl.textContent = 'You owe';
+        venmoPayLink.classList.remove('action-hidden');
+      } else {
+        settlementTextEl.textContent = 'You are settled up';
+      }
     }
 
     function updateTotals() {
@@ -357,6 +457,7 @@
 
       totalEl.textContent = formatMoney(grandTotal);
       chipCountEl.textContent = `${chipCount} chip${chipCount === 1 ? '' : 's'}`;
+      updateSettlement(grandTotal);
     }
 
     function resetAll() {
@@ -364,6 +465,7 @@
       for (const color of Object.keys(fields)) {
         fields[color].value = '';
       }
+      buyInField.value = '';
 
       updateTotals();
 
@@ -384,7 +486,27 @@
         black * values.black +
         red * values.red;
 
-      const text = `Poker chips\nWhite (50¢): ${white}\nBlue ($1): ${blue}\nGreen ($2): ${green}\nBlack ($5): ${black}\nRed ($25): ${red}\nTotal: ${formatMoney(total)}`;
+      const buyIn = getMoneyValue(buyInField);
+      const diff = +(total - buyIn).toFixed(2);
+      const settlementLine = !buyInField.value.trim()
+        ? ''
+        : diff > 0
+          ? `
+You are owed: ${formatMoney(diff)}`
+          : diff < 0
+            ? `
+You owe: ${formatMoney(Math.abs(diff))}`
+            : `
+Settled up: $0.00`;
+
+      const text = `Poker chips
+White (50¢): ${white}
+Blue ($1): ${blue}
+Green ($2): ${green}
+Black ($5): ${black}
+Red ($25): ${red}
+Total: ${formatMoney(total)}
+Buy-in: ${formatMoney(buyIn)}${settlementLine}`;
 
       try {
         await navigator.clipboard.writeText(text);
@@ -400,6 +522,8 @@
     Object.values(fields).forEach((input) => {
       input.addEventListener('input', updateTotals);
     });
+
+    buyInField.addEventListener('input', updateTotals);
 
     resetBtn.addEventListener('click', resetAll);
     shareBtn.addEventListener('click', copyResult);
